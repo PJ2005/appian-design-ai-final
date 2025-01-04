@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 220 10% 25%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 10% 25%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 10% 25%;
+    --primary: 241 91% 50%; /* Updated to #3924fa */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 197 100% 44%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 220 10% 95%;
+    --muted-foreground: 220 10% 45%;
+    --accent: 35 100% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 10% 90%;
+    --input: 220 10% 90%;
+    --ring: 241 91% 50%; /* Matching ring color */
+    --chart-1: 206 100% 35%;
+    --chart-2: 197 100% 44%;
+    --chart-3: 35 100% 55%;
+    --chart-4: 220 30% 50%;
+    --chart-5: 206 40% 60%;
+    --radius: 0.5rem;
+  }
+  
+  .dark {
+    --background: 220 20% 12%;
+    --foreground: 220 10% 98%;
+    --card: 220 20% 15%;
+    --card-foreground: 220 10% 98%;
+    --popover: 220 20% 15%;
+    --popover-foreground: 220 10% 98%;
+    --primary: 241 91% 50%; /* Updated to #3924fa */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 197 100% 44%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 220 20% 20%;
+    --muted-foreground: 220 10% 75%;
+    --accent: 35 100% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 20% 25%;
+    --input: 220 20% 25%;
+    --ring: 241 91% 50%; /* Matching ring color */
+    --chart-1: 206 100% 35%;
+    --chart-2: 197 100% 44%;
+    --chart-3: 35 100% 55%;
+    --chart-4: 220 30% 65%;
+    --chart-5: 206 40% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background: #cbd5e1;
+}
