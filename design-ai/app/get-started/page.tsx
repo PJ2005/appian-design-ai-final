@@ -29,6 +29,8 @@ export default function GetStarted() {
     id: string;
     original: string;
     suggested: string;
+    originalStyles: string;
+    aiStyles: string;
     accepted: boolean;
   }[]>([]);
   const [highlightedSections, setHighlightedSections] = useState<string[]>([]);
@@ -99,71 +101,120 @@ export default function GetStarted() {
         const reader = new FileReader();
         reader.onload = (e) => {
           const content = e.target?.result as string;
-          setOriginalCode(content);
-          setPreview(content);
+          setOriginalCode(assignUniqueIds(content));
+          setPreview(assignUniqueIds(content));
         };
         reader.readAsText(htmlFile);
       }
     }
   };
 
-  const processAIFile = (content: string) => {
-    const parser = new window.DOMParser();
+  const assignUniqueIds = (content: string) => {
+    const parser = new DOMParser();
     const dom = parser.parseFromString(content, 'text/html');
+    const elements = dom.body.querySelectorAll('*');
+    elements.forEach((element, index) => {
+      element.setAttribute('data-id', `section-${index}`);
+    });
+    return dom.body.innerHTML;
+  };
 
-    const suggestedElements = Array.from(dom.getElementsByClassName('ai-suggested'));
+  // Add function to extract CSS
+  const extractStyleContent = (html: string) => {
+    const parser = new DOMParser();
+    const dom = parser.parseFromString(html, 'text/html');
+    const styleTag = dom.querySelector('style');
+    return styleTag ? styleTag.innerHTML : '';
+  };
+  
+  const processAIFile = (content: string) => {
+    const parser = new DOMParser();
+    const dom = parser.parseFromString(content, 'text/html');
+    
+    // Extract the AI file's CSS
+    const aiStyleContent = extractStyleContent(content);
+    // Extract the original file's CSS
+    const originalStyleContent = extractStyleContent(originalCode);
+  
+    // Find elements with .ai-suggested class
+    const suggestedElements = Array.from(dom.querySelectorAll('.ai-suggested'));
+    
     const suggestions = suggestedElements.map((element, index) => {
-      const originalHTML = element.outerHTML;
-      const suggestedHTML = element.innerHTML;
-
+      // data-id="ai-XX" => originalId="XX"
+      const originalId = element.getAttribute('data-id')?.replace('ai-', '');
+      const originalElement = document.querySelector(`[data-id="section-${originalId}"]`);
+  
       return {
-        id: `suggestion-${index}`,
-        original: originalHTML,
-        suggested: suggestedHTML,
+        id: originalId || `suggestion-${index}`,
+        original: originalElement?.outerHTML || '',
+        suggested: element.outerHTML,
+  
+        // Store separate CSS blocks for each snippet
+        originalStyles: `
+          <style>
+            ${originalStyleContent}
+            .preview-container { padding: 1rem; }
+          </style>
+        `,
+        aiStyles: `
+          <style>
+            ${aiStyleContent}
+            .preview-container { padding: 1rem; }
+          </style>
+        `,
         accepted: false,
       };
     });
-
-    const highlightedElements = Array.from(dom.getElementsByClassName('ai-highlight'));
-    const highlights = highlightedElements.map(element => element.innerHTML);
-
+  
     setAiSuggestions(suggestions);
-    setHighlightedSections(highlights);
   };
-
-  const escapeRegExp = (string: string) => {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  };
+  
 
   const updatePreview = (currentSuggestions: typeof aiSuggestions) => {
-    let newPreview = originalCode;
-    
-    currentSuggestions.forEach(suggestion => {
-      if (suggestion.accepted) {
-        const regex = new RegExp(escapeRegExp(suggestion.original), 'g');
-        newPreview = newPreview.replace(regex, suggestion.suggested);
-      }
-    });
-
-    highlightedSections.forEach(highlight => {
-      const hasAcceptedSuggestions = currentSuggestions.some(s => s.accepted);
-      const highlightClass = hasAcceptedSuggestions ? 'bg-green-200' : 'bg-yellow-200';
-      const regex = new RegExp(`<span class="ai-highlight">${escapeRegExp(highlight)}</span>`, 'g');
-      newPreview = newPreview.replace(
-        regex,
-        `<span class="ai-highlight ${highlightClass}">${highlight}</span>`
-      );
-    });
-
-    setPreview(newPreview);
+    try {
+      // Create a DOM parser to work with HTML
+      const parser = new DOMParser();
+      let previewDOM = parser.parseFromString(originalCode, 'text/html');
+  
+      // Process each accepted suggestion
+      currentSuggestions.forEach(suggestion => {
+        if (suggestion.accepted) {
+          // Parse suggested HTML
+          const suggestedDOM = parser.parseFromString(suggestion.suggested, 'text/html');
+          const suggestedElement = suggestedDOM.body.firstElementChild;
+          
+          if (suggestedElement) {
+            // Find matching element in preview
+            const originalId = suggestion.id;
+            const elementToReplace = previewDOM.querySelector(`[data-id="${originalId}"]`);
+            
+            if (elementToReplace) {
+              // Replace the element
+              elementToReplace.replaceWith(suggestedElement.cloneNode(true));
+            }
+          }
+        }
+      });
+  
+      // Update preview with modified DOM
+      setPreview(previewDOM.body.innerHTML);
+    } catch (error) {
+      console.error('Error updating preview:', error);
+    }
   };
-
+  
   const handleSuggestion = (id: string, accepted: boolean) => {
     const updatedSuggestions = aiSuggestions.map(suggestion =>
       suggestion.id === id ? { ...suggestion, accepted } : suggestion
     );
     setAiSuggestions(updatedSuggestions);
     updatePreview(updatedSuggestions);
+  };
+  
+  
+  const escapeRegExp = (string: string) => {
+    if (!string || typeof string !== 'string') return '';
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   };
 
   const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -347,28 +398,70 @@ export default function GetStarted() {
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold mb-4">AI Suggestions</h2>
                 <div className="space-y-4">
-                  {aiSuggestions.map(suggestion => (
-                    <div key={suggestion.id} className="border rounded p-4">
-                      <pre className="bg-gray-100 p-2 mb-2 rounded text-black"><code>{suggestion.original}</code></pre>
-                      <div className="bg-green-50 p-2 mb-2 rounded text-black" dangerouslySetInnerHTML={{ __html: suggestion.suggested }} />
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant={suggestion.accepted ? "default" : "outline"}
-                          onClick={() => handleSuggestion(suggestion.id, true)}
-                        >
-                          <Check className="h-4 w-4 mr-1" /> Accept
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={!suggestion.accepted ? "default" : "outline"}
-                          onClick={() => handleSuggestion(suggestion.id, false)}
-                        >
-                          <X className="h-4 w-4 mr-1" /> Reject
-                        </Button>
+
+                {aiSuggestions.map(suggestion => (
+                  <div key={suggestion.id} className="border rounded p-4">
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      {/* Original Version */}
+                      <div className="border p-2 rounded">
+                        <h3 className="text-sm font-medium mb-2">Original</h3>
+                        <div className="bg-white rounded p-2">
+                          <iframe
+                            srcDoc={`
+                              <!DOCTYPE html>
+                              <html>
+                                <head>
+                                  ${suggestion.originalStyles}
+                                </head>
+                                <body>
+                                  <div class="preview-container">
+                                    ${suggestion.original}
+                                  </div>
+                                </body>
+                              </html>
+                            `}
+                            className="w-full h-40"
+                            sandbox="allow-scripts"
+                          />
+                        </div>
+                      </div>
+
+                      {/* AI Version */}
+                      <div className="border p-2 rounded">
+                        <h3 className="text-sm font-medium mb-2">AI Enhanced</h3>
+                        <div className="bg-white rounded p-2">
+                          <iframe
+                            srcDoc={`
+                              <!DOCTYPE html>
+                              <html>
+                                <head>
+                                  ${suggestion.aiStyles}
+                                </head>
+                                <body>
+                                  <div class="preview-container">
+                                    ${suggestion.suggested}
+                                  </div>
+                                </body>
+                              </html>
+                            `}
+                            className="w-full h-40"
+                            sandbox="allow-scripts"
+                          />
+                        </div>
                       </div>
                     </div>
-                  ))}
+
+                    <div className="flex gap-2">
+                      <Button onClick={() => handleSuggestion(suggestion.id, true)}>
+                        Accept
+                      </Button>
+                      <Button onClick={() => handleSuggestion(suggestion.id, false)}>
+                        Reject
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+
                 </div>
               </CardContent>
             </Card>
