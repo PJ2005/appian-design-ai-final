@@ -1,8 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { createClient } from '@/utils/supabase/client'
+
+const supabase = createClient()  
 
 // Predefined QA pairs with keywords
 const QA_DATABASE = [
@@ -29,6 +32,25 @@ export default function Chatbot() {
   const [query, setQuery] = useState('')
   const [response, setResponse] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [user, setUser] = useState<any>(null)
+
+  // Add auth state listener
+  useEffect(() => {
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setUser(session?.user ?? null)
+    }
+  
+    getSession()
+  
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null)
+    })
+  
+    return () => {
+      data?.subscription.unsubscribe()
+    }
+  }, [])
 
   const getResponse = (query: string) => {
     const words = query.toLowerCase().split(' ')
