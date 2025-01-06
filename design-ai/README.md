@@ -1,96 +1,123 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# AI-Powered Website Design Enhancement Tool
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+An advanced web application that leverages AI to optimize and enhance your website's HTML and CSS code. With intelligent suggestions, live previews, and real-time customization options, this tool simplifies website design for developers and designers.
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+---
 
-## Features
+## 🚀 Features
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Middleware
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+### Core Functionalities
+- **AI-Powered Design Suggestions**:
+  - Automatically analyzes and enhances HTML/CSS code.
+  - Provides actionable improvements in aesthetics, accessibility, semantics, and responsiveness.
+- **Live Preview**:
+  - Real-time visualization of original and optimized designs.
+  - Side-by-side comparisons for easier decision-making.
+- **Interactive Changes**:
+  - Accept/reject individual AI suggestions with immediate feedback.
+  - Customized designs while preserving the original structure.
+- **Version Control**:
+  - Track and manage design changes with a secure history of revisions.
+- **Categorized Suggestions**:
+  - Recommendations segmented into categories like aesthetics, accessibility, semantics, and responsiveness.
 
-## Demo
+### Technical Features
+- **File Processing**:
+  - Upload HTML/CSS files for automatic processing and optimization.
+- **Real-Time Chat Support**:
+  - Integrated chatbot for instant help and guidance.
+- **Cloud Storage**:
+  - Store original files, applied changes, and metadata securely.
+- **Secure Authentication**:
+  - Powered by Supabase for robust user management.
+- **API-Powered Backend**:
+  - FastAPI and fine-tuned LLMs for intelligent processing.
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+---
 
-## Deploy to Vercel
+## 🛠️ Technology Stack
 
-Vercel deployment will guide you through creating a Supabase account and project.
+- **Frontend**: Next.js, React, TailwindCSS, shadcn/ui
+- **Backend**: FastAPI, Supabase, Codellama-7B, Ollama, Langchain
+- **Authentication**: Supabase Auth
+- **Storage**: Supabase Storage
+- **Parsing**: BeautifulSoup4
+- **AI Models**: Fine-tuned LLMs
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+---
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+## 📋 Prerequisites
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+- Node.js 18+ 
+- npm or Yarn
+- Supabase account
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+---
 
-## Clone and run locally
+## 🚀 Getting Started
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
-
-2. Create a Next.js app using the Supabase Starter template npx command
-
+1. **Clone the Repository**:
    ```bash
-   npx create-next-app -e with-supabase
+   git clone [repository-url]
+   cd design-ai
    ```
-
-3. Use `cd` to change into the app's directory
-
+2. **Install Dependencies**:
    ```bash
-   cd name-of-new-app
+   npm install
    ```
-
-4. Rename `.env.example` to `.env.local` and update the following:
-
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=[INSERT SUPABASE PROJECT API ANON KEY]
-   ```
-
-   Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` can be found in [your Supabase project's API settings](https://app.supabase.com/project/_/settings/api)
-
-5. You can now run the Next.js local development server:
-
+3. **Set Up Environment**:
+   - Create a `.env.local` file with necessary credentials.
+4. **Run the Development Server**:
    ```bash
    npm run dev
    ```
 
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
+---
 
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
+## 💡 How to Use
 
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
+1. **Upload Design Files**:
+   - Click the "Upload Files" button.
+   - Select HTML/CSS files and provide design requirements.
+2. **Review Suggestions**:
+   - View AI-suggested changes categorized by accessibility, aesthetics, semantics, and responsiveness.
+   - Accept or reject changes with real-time previews.
+3. **Preview and Export**:
+   - Save the updated design.
+   - Download enhanced files or export the final code.
 
-## Feedback and issues
+---
 
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
+## 💻 What Happens Inside?
 
-## More Supabase examples
+1. **File Input**: Upload HTML/CSS files via the frontend.
+2. **Parsing**: Files are parsed using `BeautifulSoup4`.
+3. **AI Suggestions**:
+   - The LLM analyzes the code for accessibility, aesthetics, semantics, and responsiveness.
+   - Generates actionable suggestions with scores and annotated changes.
+4. **User Interaction**:
+   - Changes are previewed with options to accept/reject.
+   - Accepted changes are applied to the final design.
+5. **Version Control**:
+   - Original and updated files are stored in Supabase with revision history.
 
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Submit a pull request or report issues.
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- Built with Next.js
+- Powered by Supabase
+- Supported by FastAPI and fine-tuned LLMs
+- UI components from shadcn/ui
