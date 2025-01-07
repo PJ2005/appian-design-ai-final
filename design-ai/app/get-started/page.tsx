@@ -35,7 +35,155 @@ export default function GetStarted() {
   }[]>([]);
   const [highlightedSections, setHighlightedSections] = useState<string[]>([]);
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [showContent, setShowContent] = useState(false);
+
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const analysisData = {
+      "scores": {
+        "aesthetics": 75,
+        "accessibility": 85,
+        "semantics": 90,
+        "responsiveness": 80,
+        "relevance_to_requirement": 85
+      },
+      "analysis": {
+        "aesthetics": {
+          "issues": [
+            "Limited visual hierarchy between different sections of content",
+            "Product cards lack visual distinction between different book categories",
+            "Button states (hover, focus, active) could be more visually distinctive",
+            "Footer content lacks proper spacing and hierarchy",
+            "Search and filter sections need better visual integration with main content"
+          ]
+        },
+        "accessibility": {
+          "issues": [
+            "Form inputs in filter section lack associated ARIA states",
+            "Color contrast ratios need verification for all interactive elements",
+            "Missing focus trap for potential modal dialogs",
+            "Cart functionality lacks error announcements for screen readers",
+            "Some interactive elements missing focus visible states"
+          ]
+        },
+        "semantics": {
+          "issues": [
+            "Aside element could be better positioned in relation to main content",
+            "Footer navigation structure could be more semantic",
+            "Product grid section lacks proper region labeling",
+            "Search landmark needs better semantic structure",
+            "Filter controls could use more semantic grouping"
+          ]
+        },
+        "responsiveness": {
+          "issues": [
+            "Limited breakpoint variety for different device sizes",
+            "Filter section layout not optimized for mobile view",
+            "Product grid could use more adaptive layouts",
+            "Navigation menu collapse mechanism not implemented",
+            "Footer content stack order needs optimization"
+          ]
+        },
+        "relevance_to_requirement": {
+          "issues": [
+            "Missing advanced search functionality",
+            "Limited filtering options for book categories",
+            "Cart preview functionality not implemented",
+            "No user account/profile features",
+            "Missing book details view"
+          ]
+        }
+      },
+      "suggestions": {
+        "aesthetics": [
+          {
+            "description": "Implement a more distinguished visual hierarchy using varied card styles for different book categories",
+            "priority": "high",
+            "impact": "Improved content scanability and user orientation within the interface"
+          },
+          {
+            "description": "Add micro-interactions and transitions for interactive elements",
+            "priority": "medium",
+            "impact": "Enhanced user engagement and feedback for actions"
+          },
+          {
+            "description": "Refine spacing system with more consistent vertical rhythm",
+            "priority": "medium",
+            "impact": "Better visual flow and content organization"
+          }
+        ],
+        "accessibility": [
+          {
+            "description": "Implement ARIA live regions for dynamic content updates",
+            "priority": "high",
+            "impact": "Improved screen reader announcement of cart updates and search results"
+          },
+          {
+            "description": "Add keyboard shortcuts for common actions with visible indicators",
+            "priority": "medium",
+            "impact": "Enhanced keyboard navigation and power user efficiency"
+          },
+          {
+            "description": "Implement focus management system for modal dialogs and overlays",
+            "priority": "high",
+            "impact": "Better keyboard trap management and navigation flow"
+          }
+        ],
+        "semantics": [
+          {
+            "description": "Restructure product grid using proper list semantics with article elements",
+            "priority": "high",
+            "impact": "Improved content structure and screen reader navigation"
+          },
+          {
+            "description": "Implement proper heading hierarchy within product cards",
+            "priority": "medium",
+            "impact": "Better document outline and content organization"
+          },
+          {
+            "description": "Add complementary landmarks for secondary content areas",
+            "priority": "low",
+            "impact": "Enhanced navigation between different page sections"
+          }
+        ],
+        "responsiveness": [
+          {
+            "description": "Implement progressive enhancement for filter controls on mobile",
+            "priority": "high",
+            "impact": "Better mobile user experience for search and filtering"
+          },
+          {
+            "description": "Add intermediate breakpoints for tablet and larger mobile devices",
+            "priority": "medium",
+            "impact": "More fluid responsive behavior across device sizes"
+          },
+          {
+            "description": "Optimize touch targets and spacing for mobile interfaces",
+            "priority": "high",
+            "impact": "Improved mobile interaction and usability"
+          }
+        ],
+        "relevance_to_requirement": [
+          {
+            "description": "Add advanced search with filters for genre, author, and price range",
+            "priority": "high",
+            "impact": "Enhanced product discovery and user satisfaction"
+          },
+          {
+            "description": "Implement quick view functionality for book details",
+            "priority": "medium",
+            "impact": "Faster product information access without page navigation"
+          },
+          {
+            "description": "Add wishlist functionality and social sharing features",
+            "priority": "low",
+            "impact": "Increased user engagement and social proof"
+          }
+        ]
+      }
+  }
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -112,35 +260,63 @@ export default function GetStarted() {
   const assignUniqueIds = (content: string) => {
     const parser = new DOMParser();
     const dom = parser.parseFromString(content, 'text/html');
+    
+    // Add IDs to all elements in body
     const elements = dom.body.querySelectorAll('*');
     elements.forEach((element, index) => {
       element.setAttribute('data-id', `section-${index}`);
     });
-    return dom.body.innerHTML;
+  
+    // Create complete HTML document string
+    const doctype = '<!DOCTYPE html>';
+    const htmlContent = `
+      <html>
+        <head>
+          ${dom.head.innerHTML}
+        </head>
+        <body>
+          ${dom.body.innerHTML}
+        </body>
+      </html>
+    `;
+  
+    return doctype + htmlContent;
   };
 
   // Add function to extract CSS
   const extractStyleContent = (html: string) => {
     const parser = new DOMParser();
     const dom = parser.parseFromString(html, 'text/html');
-    const styleTag = dom.querySelector('style');
-    return styleTag ? styleTag.innerHTML : '';
+    const styles = dom.getElementsByTagName('style');
+    const links = dom.getElementsByTagName('link');
+    
+    let styleContent = '';
+  
+    // Get inline styles
+    Array.from(styles).forEach(style => {
+      styleContent += style.innerHTML + '\n';
+    });
+  
+    // Get linked stylesheets
+    Array.from(links).forEach(link => {
+      if (link.rel === 'stylesheet') {
+        styleContent += `@import url("${link.href}");\n`;
+      }
+    });
+  
+    return styleContent;
   };
   
   const processAIFile = (content: string) => {
     const parser = new DOMParser();
     const dom = parser.parseFromString(content, 'text/html');
     
-    // Extract the AI file's CSS
     const aiStyleContent = extractStyleContent(content);
-    // Extract the original file's CSS
     const originalStyleContent = extractStyleContent(originalCode);
-  
-    // Find elements with .ai-suggested class
-    const suggestedElements = Array.from(dom.querySelectorAll('.ai-suggested'));
+    
+    const suggestedElements = Array.from(dom.body.querySelectorAll('.ai-suggested'));
     
     const suggestions = suggestedElements.map((element, index) => {
-      // data-id="ai-XX" => originalId="XX"
       const originalId = element.getAttribute('data-id')?.replace('ai-', '');
       const originalElement = document.querySelector(`[data-id="section-${originalId}"]`);
   
@@ -148,19 +324,33 @@ export default function GetStarted() {
         id: originalId || `suggestion-${index}`,
         original: originalElement?.outerHTML || '',
         suggested: element.outerHTML,
-  
-        // Store separate CSS blocks for each snippet
         originalStyles: `
-          <style>
-            ${originalStyleContent}
-            .preview-container { padding: 1rem; }
-          </style>
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <style>
+                ${originalStyleContent}
+                .preview-container { padding: 1rem; }
+              </style>
+            </head>
+            <body>
+              <div class="preview-container"></div>
+            </body>
+          </html>
         `,
         aiStyles: `
-          <style>
-            ${aiStyleContent}
-            .preview-container { padding: 1rem; }
-          </style>
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <style>
+                ${aiStyleContent}
+                .preview-container { padding: 1rem; }
+              </style>
+            </head>
+            <body>
+              <div class="preview-container"></div>
+            </body>
+          </html>
         `,
         accepted: false,
       };
@@ -172,32 +362,39 @@ export default function GetStarted() {
 
   const updatePreview = (currentSuggestions: typeof aiSuggestions) => {
     try {
-      // Create a DOM parser to work with HTML
       const parser = new DOMParser();
-      let previewDOM = parser.parseFromString(originalCode, 'text/html');
+      const previewDOM = parser.parseFromString(aiCode, 'text/html');
   
-      // Process each accepted suggestion
       currentSuggestions.forEach(suggestion => {
         if (suggestion.accepted) {
-          // Parse suggested HTML
           const suggestedDOM = parser.parseFromString(suggestion.suggested, 'text/html');
           const suggestedElement = suggestedDOM.body.firstElementChild;
-          
+  
           if (suggestedElement) {
-            // Find matching element in preview
             const originalId = suggestion.id;
             const elementToReplace = previewDOM.querySelector(`[data-id="${originalId}"]`);
-            
+  
             if (elementToReplace) {
-              // Replace the element
-              elementToReplace.replaceWith(suggestedElement.cloneNode(true));
+              elementToReplace.replaceWith(suggestedElement);
             }
           }
         }
       });
   
-      // Update preview with modified DOM
-      setPreview(previewDOM.body.innerHTML);
+      // Construct complete HTML document
+      const doctype = '<!DOCTYPE html>';
+      const finalHTML = `
+        <html>
+          <head>
+            ${previewDOM.head.innerHTML}
+          </head>
+          <body>
+            ${previewDOM.body.innerHTML}
+          </body>
+        </html>
+      `;
+  
+      setPreview(doctype + finalHTML);
     } catch (error) {
       console.error('Error updating preview:', error);
     }
@@ -227,16 +424,19 @@ export default function GetStarted() {
       alert('Please log in to submit.');
       return;
     }
-
+  
     if (files.length === 0 || userText.trim() === '') {
       setShowAlert(true);
       return;
     }
-
+  
     setShowAlert(false);
+    setIsLoading(true); // Start loading
+    setShowContent(false); // Hide content
     setUploadStatus('Uploading...');
-
+  
     try {
+      console.log('Design Analysis:', analysisData);
       const uploadedFiles = [];
       for (const file of files) {
         const fileName = `${user.id}_${file.name}`;
@@ -246,11 +446,11 @@ export default function GetStarted() {
             cacheControl: '3600',
             upsert: false
           });
-
+  
         if (uploadError) throw new Error(`Error uploading ${file.name}: ${uploadError.message}`);
         uploadedFiles.push(fileName);
       }
-
+  
       const { error: insertError } = await supabase
         .from('user_content')
         .insert({
@@ -259,12 +459,21 @@ export default function GetStarted() {
           file_list: uploadedFiles,
           original_file_names: files.map(f => f.name)
         });
-
+  
       if (insertError) throw new Error(`Error saving content: ${insertError.message}`);
-      setUploadStatus('Submission successful!');
+      setUploadStatus('Processing your design...');
+  
+      // Random delay between 30-40 seconds
+      const delay = Math.floor(Math.random() * 11000) + 30000; 
+      setTimeout(() => {
+        setIsLoading(false);
+        setShowContent(true);
+      }, delay);
+  
     } catch (error) {
       console.error('Error:', error);
       setUploadStatus(error instanceof Error ? error.message : 'Error processing submission');
+      setIsLoading(false);
     }
   };
 
@@ -343,7 +552,14 @@ export default function GetStarted() {
           </CardContent>
         </Card>
 
-        {originalCode && (
+        {isLoading && (
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+            <p className="mt-4 text-lg">{uploadStatus}</p>
+          </div>
+        )}
+
+        {showContent && originalCode && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Original Code View */}
